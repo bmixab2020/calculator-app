@@ -242,10 +242,13 @@ th[data-sort]:hover {
   line-height: 1.2;
 }
 
+/* The Total column is calculated, not typed into, so shade it to signal
+   that it is display-only. */
 .sheet td.total-col {
   text-align: right;
   font-weight: 600;
   white-space: nowrap;
+  background: #f3f4f6;
 }
 
 .sheet td.date-col input {
@@ -291,6 +294,7 @@ th[data-sort]:hover {
 .sheet tr.total-foot-row .sum-val-cell {
   text-align: right;
   white-space: nowrap;
+  background: #f3f4f6;
 }
 
 .sheet tr.total-foot-row .sum-val-cell strong {
@@ -300,6 +304,7 @@ th[data-sort]:hover {
 .sheet tr.total-foot-row .total-val-cell {
   text-align: right;
   white-space: nowrap;
+  background: #f3f4f6;
 }
 
 .sheet tr.total-foot-row .total-val-cell strong {
