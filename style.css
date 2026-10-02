@@ -248,7 +248,7 @@ th[data-sort]:hover {
   text-align: right;
   font-weight: 600;
   white-space: nowrap;
-  background: #f3f4f6;
+  background: #f9fafb;
 }
 
 .sheet td.date-col input {
@@ -294,7 +294,7 @@ th[data-sort]:hover {
 .sheet tr.total-foot-row .sum-val-cell {
   text-align: right;
   white-space: nowrap;
-  background: #f3f4f6;
+  background: #f9fafb;
 }
 
 .sheet tr.total-foot-row .sum-val-cell strong {
@@ -304,7 +304,7 @@ th[data-sort]:hover {
 .sheet tr.total-foot-row .total-val-cell {
   text-align: right;
   white-space: nowrap;
-  background: #f3f4f6;
+  background: #f9fafb;
 }
 
 .sheet tr.total-foot-row .total-val-cell strong {
