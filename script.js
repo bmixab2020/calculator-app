@@ -1,4 +1,4 @@
-const rowsBody = document.getElementById("rowsBody");
+﻿const rowsBody = document.getElementById("rowsBody");
 const display = document.getElementById("display");
 const addRowBtn = document.getElementById("addRowBtn");
 const clearBtn = document.getElementById("clearBtn");
@@ -21,8 +21,14 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD"
 });
 
+const numberFormatter = new Intl.NumberFormat("en-US");
+
 function formatCurrency(value) {
   return currencyFormatter.format(value);
+}
+
+function formatNumber(value) {
+  return numberFormatter.format(value);
 }
 
 function parseMoney(value) {
@@ -33,6 +39,17 @@ function parseMoney(value) {
     return 0;
   }
   const parsed = parseFloat(String(value).replace(/[$,\s]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function parseNumber(value) {
+  if (typeof value === "number") {
+    return value;
+  }
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  const parsed = parseFloat(String(value).replace(/[, \s]/g, ""));
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -48,10 +65,30 @@ function attachCurrencyFormatting(input) {
   });
 }
 
+function attachNumberFormatting(input) {
+  input.addEventListener("focus", () => {
+    const val = parseNumber(input.value);
+    input.value = val !== 0 || String(input.value).trim() !== "" ? String(val) : "";
+  });
+  input.addEventListener("blur", () => {
+    if (String(input.value).trim() !== "") {
+      input.value = formatNumber(parseNumber(input.value));
+    }
+  });
+}
+
 function formatCurrencyInputs() {
   document.querySelectorAll(".num-input, .discount-input").forEach((input) => {
     if (String(input.value).trim() !== "") {
       input.value = formatCurrency(parseMoney(input.value));
+    }
+  });
+}
+
+function formatNumberInputs() {
+  document.querySelectorAll(".qty-input").forEach((input) => {
+    if (String(input.value).trim() !== "") {
+      input.value = formatNumber(parseNumber(input.value));
     }
   });
 }
@@ -70,7 +107,7 @@ function computeTotal() {
 
   rows.forEach((row) => {
     const op = row.querySelector(".op-select").value;
-    const qty = parseFloat(row.querySelector(".qty-input").value) || 0;
+    const qty = parseNumber(row.querySelector(".qty-input").value);
     const amount = parseMoney(row.querySelector(".num-input").value);
     const discount = parseMoney(row.querySelector(".discount-input").value);
     const value = qty * (amount - discount);
@@ -106,7 +143,7 @@ function pdfFileName() {
 
 function renderRowTotal(row) {
   const op = row.querySelector(".op-select").value;
-  const qty = parseFloat(row.querySelector(".qty-input").value) || 0;
+  const qty = parseNumber(row.querySelector(".qty-input").value);
   const amount = parseMoney(row.querySelector(".num-input").value);
   const discount = parseMoney(row.querySelector(".discount-input").value);
   const value = qty * (amount - discount);
@@ -123,14 +160,14 @@ function renderTotal() {
     renderRowTotal(row);
     const op = row.querySelector(".op-select").value;
     const sign = op === "-" ? -1 : 1;
-    const qty = parseFloat(row.querySelector(".qty-input").value) || 0;
+    const qty = parseNumber(row.querySelector(".qty-input").value);
     const amount = parseMoney(row.querySelector(".num-input").value);
     const discount = parseMoney(row.querySelector(".discount-input").value);
     qtySum += qty;
     amountSum += sign * qty * amount;
     discountSum += sign * qty * discount;
   });
-  document.getElementById("qtySum").textContent = qtySum;
+  document.getElementById("qtySum").textContent = formatNumber(qtySum);
   document.getElementById("amountSum").textContent = formatCurrency(amountSum);
   document.getElementById("discountSum").textContent = formatCurrency(discountSum);
   display.textContent = formatCurrency(computeTotal());
@@ -171,12 +208,12 @@ function createRow(index) {
   const tdQty = document.createElement("td");
   tdQty.className = "qty-col";
   const qtyInput = document.createElement("input");
-  qtyInput.type = "number";
-  qtyInput.min = "0";
-  qtyInput.step = "1";
+  qtyInput.type = "text";
+  qtyInput.inputMode = "numeric";
   qtyInput.className = "qty-input";
   qtyInput.value = "1";
   qtyInput.addEventListener("input", renderTotal);
+  attachNumberFormatting(qtyInput);
   tdQty.appendChild(qtyInput);
 
   const tdNum = document.createElement("td");
@@ -280,14 +317,14 @@ function rowValue(row, key) {
     return parseInt(row.dataset.index, 10);
   }
   if (key === "qty") {
-    return parseFloat(row.querySelector(".qty-input").value) || 0;
+    return parseNumber(row.querySelector(".qty-input").value);
   }
   if (key === "discount") {
     return parseMoney(row.querySelector(".discount-input").value);
   }
   if (key === "amount" || key === "total") {
     const op = row.querySelector(".op-select").value;
-    const qty = parseFloat(row.querySelector(".qty-input").value) || 0;
+    const qty = parseNumber(row.querySelector(".qty-input").value);
     const amount = parseMoney(row.querySelector(".num-input").value);
     const discount = parseMoney(row.querySelector(".discount-input").value);
     const value = qty * (amount - discount);
@@ -337,7 +374,7 @@ printBtn.addEventListener("click", () => {
     .filter((row) => row.querySelector(".num-input").value.trim() !== "")
     .map((row, i) => {
       const op = row.querySelector(".op-select").value;
-      const qty = parseFloat(row.querySelector(".qty-input").value) || 0;
+      const qty = parseNumber(row.querySelector(".qty-input").value);
       const raw = row.querySelector(".num-input").value;
       const amount = raw === "" ? 0 : parseMoney(raw);
       const discount = parseMoney(row.querySelector(".discount-input").value);
@@ -392,7 +429,7 @@ printBtn.addEventListener("click", () => {
 
   const drawRow = (row, y) => {
     doc.text(String(row.index), 32, y, { align: "right" });
-    doc.text(String(row.qty), 46, y, { align: "right" });
+    doc.text(formatNumber(row.qty), 46, y, { align: "right" });
     doc.text(formatCurrency(row.amount), 70, y, { align: "right" });
     doc.text(formatCurrency(row.discount), 88, y, { align: "right" });
     doc.text(formatCurrency(row.signed), 110, y, { align: "right" });
@@ -448,7 +485,7 @@ printBtn.addEventListener("click", () => {
   doc.setFont("symbol", "normal");
   doc.text("S", 27, totalY, { align: "center" });
   doc.setFont("helvetica", "bold");
-  doc.text(String(qtySum), 46, totalY, { align: "right" });
+  doc.text(formatNumber(qtySum), 46, totalY, { align: "right" });
   doc.text(formatCurrency(amountSum), 70, totalY, { align: "right" });
   doc.text(formatCurrency(discountSum), 88, totalY, { align: "right" });
   doc.text(formatCurrency(total), 110, totalY, { align: "right" });
@@ -669,6 +706,7 @@ savedSheets.addEventListener("change", () => {
       row.querySelector(".date-input").value = r.date || "";
     });
     formatCurrencyInputs();
+    formatNumberInputs();
   }
   renderTotal();
 });
